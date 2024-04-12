@@ -1,8 +1,9 @@
-import { useState } from "react";
+import {  useState } from "react";
 import { useSocketContext } from "../Context/Socketcontext";
 import Labelledinput from "./Labelledinput";
-import {  useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+
 
 const Landing = () => {
   const navigate = useNavigate();
@@ -12,26 +13,27 @@ const Landing = () => {
 
   const { socket } = useSocketContext();
 
+ 
   const handleclick = () => {
-    if (email.trim()=="" || roomId.trim()=="" || username.trim()==""){
-      toast.error("Credentials cannot be empty.")
-      return 
+    if (email.trim() == "" || roomId.trim() == "" || username.trim() == "") {
+      toast.error("Credentials cannot be empty.");
+      return;
     }
     socket?.emit("join-room", {
       emailId: email,
       roomId: roomId,
       username: username,
     });
-   
-      socket?.on("approved-joining",({roomId})=>{
-         toast.success(`Joined room ${roomId}`)
-        navigate(`/room?room=${roomId}`);
-      })
-     
+
+    socket?.on("approved-joining", ({ roomId }) => {
+      toast.success(`Joined room ${roomId}`);
+      navigate(`/room?room=${roomId}`);
+    });
   };
   return (
-    <div className="flex w-full min-h-screen items-center justify-center">
-      <div className="flex flex-col gap-4 items-center">
+    <div className="flex flex-col w-full min-h-screen items-center justify-center">
+     
+      <div className="flex justify-center gap-4 items-center">
         <Labelledinput
           label="Email"
           placeholder="Enter Email"

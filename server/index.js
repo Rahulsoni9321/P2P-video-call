@@ -21,6 +21,7 @@ app.get('/',(req,res)=>{
 
 
 const onlineuser=new Map();
+const sockettoemailmapping=new Map();
 
 io.on('connection',(socket)=>{
     socket.emit("me",socket.id);
@@ -29,22 +30,29 @@ io.on('connection',(socket)=>{
     socket.on('join-room',({emailId,username,roomId})=>{
         console.log(`User with emailid ${emailId} joined and name ${username}`)
         onlineuser.set(emailId,socket.id)
-        console.log(onlineuser)
+        sockettoemailmapping.set(socket.id,emailId)
         socket.join(roomId)
         socket.emit("approved-joining",{roomId})
-        socket.broadcast.to(roomId).emit("user-joined",`User with emailId ${emailId} has connected`)
+        socket.broadcast.to(roomId).emit("user-joined",{emailId})
     })
  
-    socket.on("calluser",({signaldata,from, to,client})=>{
-        io.to(to).emit("calluser",{signal:signaldata,from,client})
+    socket.on("call-user",(data)=>{
+        const {emailId,offer}=data;
+        const to = onlineuser.get(emailId);
+        const from = sockettoemailmapping.get(socket.id)
+        socket.to(to).emit("incoming-call",{from,offer})
+    })
+
+    socket.on("call-accepted",(data)=>{
+        const {ans,from}=data;
+        const socketid=onlineuser.get(from);
+        socket.to(socketid).emit("call-accepted",{ans})
+
     })
     socket.on('disconnect',()=>{
         socket.broadcast.emit("Call Ended")
     })
 
-    socket.on("answercall",(data)=>{
-        io.to(data.to).emit("call accepted",data.signal);
-    })
 })
 
 server.listen(port,()=>{
